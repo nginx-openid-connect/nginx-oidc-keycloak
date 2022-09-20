@@ -51,6 +51,6 @@ This repo provides the information of how to set up Keycloak, integrate with NGI
 
 - [NGINX OIDC Core v1.0: Forked from NGINX GitHub](https://github.com/nginx-openid-connect/nginx-oidc-core-v1)
 - [NGINX OIDC Core v2.0: Forked from NGINX GitHub](https://github.com/nginx-openid-connect/nginx-oidc-core)
-- [NGINX Plus: Single Sign-On With Keycloak](https://docs.nginx.com/nginx/deployment-guides/single-sign-on/cognito/)
+- [NGINX Plus: Single Sign-On With Keycloak](https://docs.nginx.com/nginx/deployment-guides/single-sign-on/keycloak/)
 - [NGINX Management Suite](https://docs.nginx.com/nginx-management-suite/)
 - [NGINX API Connectivity Manager](https://docs.nginx.com/nginx-management-suite/acm/)
