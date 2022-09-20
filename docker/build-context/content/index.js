@@ -142,10 +142,10 @@ var doAPIRequest = function(evt, uri, msgBefore, msgAfter, headers) {
     showMessageDetail(MSG_EMPTY_JSON)
     if (response.ok || response.status == 400) {
       return response.json();
-    } else if (response.status == 401) {
-      if (uri != '/userinfo') {
-        signInWithClientId('/login')
-      }
+    // } else if (response.status == 401) {
+    //   if (uri != '/userinfo') {
+    //     signInWithClientId('/login')
+    //   }
     }
     throw new Error(response.error)
   })
