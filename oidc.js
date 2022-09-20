@@ -795,6 +795,7 @@ function isValidSession(r) {
     r.log('Start checking if there is an existing valid session...')
     var valid_session_id = generateSession(r);
     if (r.variables.cookie_session_id != valid_session_id) {
+        r.log('############## cookie_session_id is not equal to valid session id')
         return false;
     }
     return true;
@@ -804,13 +805,12 @@ function isValidSession(r) {
 // the session cookie could play from any client (browsers or command line).
 //
 function validateSession(r) {
-    if (r.variables.session_validation_enable == 1 && !isValidSession(r)) {
+    if (!isValidSession(r)) {
         r.warn(WRN_SESSION)
         r.return(401, '{"message": "' + WRN_SESSION + '"}\n')
-        return false;
     }
-    r.return(200, '{"message": "' + WRN_SESSION + '"}\n') 
-    return true;
+    r.log('############## valid session')
+    r.return(200, '{"message": "' + "valid session" + '"}\n') 
 }
 
 // Check if `X-Client-Id` is in query params of HTTP request, and if the name of

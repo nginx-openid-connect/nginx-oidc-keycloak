@@ -34,15 +34,14 @@ var initButtons = function () {
   }
 }
 
-
 var initButtonsBeforeSignIn = function () {
-  btnProxiedAPI.disabled = true
+  // btnProxiedAPI.disabled = true
   isSignedIn             = false;
   showLoginBtnTitle(TITLE_SIGNIN);
 }
 
 var initButtonsAfterSignIn = function () {
-  btnProxiedAPI.disabled = false
+  // btnProxiedAPI.disabled = false
   isSignedIn             = true;
   showLoginBtnTitle(TITLE_SIGNOUT);
 }
@@ -67,6 +66,8 @@ var eventHandlerSignIn = function (evt) {
 //              backend API via `proxy_set_header Authorization` directive.
 var eventHandlerProxiedAPI = function (evt) {
   var headers = {};
+  var x_client_id = getClientId();
+  setCookie('client_id', x_client_id)
   doAPIRequest(
     evt,
     getSampleURI(), 
@@ -88,7 +89,7 @@ var doNginxEndpointRequest = function(evt, uri) {
   if (evt && evt.type === 'keypress' && evt.keyCode !== 13) {
     return;
   }
-  location.href = window.location.origin + uri;
+  signInWithClientId(uri)  
 };
 
 var eraseCookie = function(name) {
@@ -101,13 +102,6 @@ var setCookie = function(name, value) {
 
 // Sign in by clicking 'Sign In' button of the UI.
 var doSignIn = function(evt) {
-  eraseCookie('session_id')
-  eraseCookie('auth_redir')
-  eraseCookie('auth_nonce')
-  eraseCookie('client_id')
-
-  var x_client_id = getClientId();
-  setCookie('client_id', x_client_id)
   doNginxEndpointRequest(evt, '/login');
 };
 
@@ -115,6 +109,18 @@ var doSignIn = function(evt) {
 var doSignOut = function(evt) {
   doNginxEndpointRequest(evt, '/logout');
 };
+
+var signInWithClientId = function(uri) {
+  eraseCookie('session_id')
+  eraseCookie('auth_redir')
+  eraseCookie('auth_nonce')
+  eraseCookie('client_id')
+
+  var x_client_id = getClientId();
+  setCookie('client_id', x_client_id)
+  location.href = window.location.origin + uri;
+  // location.href = window.location.origin + uri + "?client_id=x_client_id";  
+}
 
 // Request an API with application/json type response.
 var doAPIRequest = function(evt, uri, msgBefore, msgAfter, headers) {
@@ -125,7 +131,10 @@ var doAPIRequest = function(evt, uri, msgBefore, msgAfter, headers) {
   const url = window.location.origin + uri;
   fetch(url, {
       method : 'GET',
-      mode   : 'cors',
+      mode: 'no-cors', // no-cors, *cors, same-origin
+      // credentials: 'same-origin', // include, *same-origin, omit
+      // redirect: 'follow', // manual, *follow, error
+      // referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       headers: headers
   })
   .then((response) => {
@@ -133,6 +142,10 @@ var doAPIRequest = function(evt, uri, msgBefore, msgAfter, headers) {
     showMessageDetail(MSG_EMPTY_JSON)
     if (response.ok || response.status == 400) {
       return response.json();
+    } else if (response.status == 401) {
+      if (uri != '/userinfo') {
+        signInWithClientId('/login')
+      }
     }
     throw new Error(response.error)
   })
