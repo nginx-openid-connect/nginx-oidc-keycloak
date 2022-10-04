@@ -1,13 +1,13 @@
-# How To Set Up NGINX Plus OIDC for Amazon Cognito Integration
+# How To Set Up NGINX Plus OIDC for Keycloak Integration
 
 Take the following steps to set up NGINX Plus as the OpenID Connect relying party that runs.
 
 ## Configure NGINX OpenID Connect
 
-1. Clone the [nginx-openid-connect/nginx-oidc-amazon-cognito](git@github.com:nginx-openid-connect/nginx-oidc-v1-amazon-cognito.git) GitHub repository, or download the repo files.
+1. Clone the [nginx-openid-connect/nginx-oidc-amazon-cognito](https://github.com/nginx-openid-connect/nginx-oidc-keycloak) GitHub repository, or download the repo files.
 
    ```bash
-   git clone https://github.com/nginx-openid-connect/nginx-oidc-amazon-cognito.git
+   git clone https://github.com/nginx-openid-connect/nginx-oidc-keycloak.git
    ```
 
 2. In the `oidc_idp.conf`, find the following directives(`$idp_domain`, `$idp_region`, `$idp_user_pool_id`, `$oidc_client`), and update them.
@@ -17,19 +17,12 @@ Take the following steps to set up NGINX Plus as the OpenID Connect relying part
 
    ```nginx
     map $x_client_id $idp_domain {
-        # e.g., my-nginx-plus-oidc.auth.us-east-2.amazoncognito.com
+        # e.g., host.docker.internal:8080/auth/realms/master/protocol/openid-connect
         default "{{Edit-IdP-Domain}}";
     }
 
-    map $x_client_id $idp_region {
-        default "{{Edit-IdP-Region}}" # e.g., us-east-2
-    }
-
-    map $x_client_id $idp_user_pool_id {
-        default "{{Edit-User-Pool-ID}}" # e.g., us-east-xxxxxxxxxxx
-    }
-
     map $x_client_id $oidc_client {
+        # e.g., my-client-id
         default "{{Edit-your-IdP-client-ID}}";
     }
    ```
@@ -60,12 +53,12 @@ Take the following steps to set up NGINX Plus as the OpenID Connect relying part
      }
      ```
 
-4. **Optional**: In the `oidc_nginx_server.conf`, update `$resolver` if you use local DNS servers.
+4. **Optional**: In the `oidc_nginx_server.conf`, update `$resolver` if you use local DNS servers. In this repository, we use `127.0.0.11` for locally testing Keycloak using Docker containers.
 
    ```nginx
-    resolver   8.8.8.8;         # For global DNS lookup of IDP endpoint
+    resolver 127.0.0.11;        # For local Docker DNS lookup
+             # 8.8.8.8;         # For global DNS lookup of IDP endpoint
              # xxx.xxx.xxx.xxx; # For your local DNS lookup
-             # 127.0.0.11;      # For local Docker DNS lookup
    ```
 
 ## Optional Configuration
