@@ -4,132 +4,86 @@ Take the following steps to create a new application of Keycloak for integrating
 
 > **Note:**
 >
-> The following procedure reflects the Cognito GUI at the time of publication, but the GUI is subject to change. Use this guide as a reference and adapt to the current Cognito GUI as necessary.
+> The following procedure reflects the Keycloak GUI at the time of publication, but the GUI is subject to change. Use this guide as a reference and adapt to the current Keycloak GUI as necessary.
 
-- [Create a new User Pool](#create-a-new-user-pool)
-- [Create a user](#create-a-user)
-- [Create a domain](#create-a-domain)
-- [Create or Edit a new Application](#create-or-edit-a-new-application)
+- [Create a Client](#create-a-client-app)
+- [Create a Role](#create-a-role)
+- [Create a User](#create-a-user)
 
-## Create a new User Pool
+## Create a Client App
 
-1. Log in to your AWS account, open the [AWS Management Console](https://console.aws.amazon.com), and navigate to the Cognito dashboard (you can, for example, click **`Cognito`** in the **Security, Identity, & Compliance** section of the **Services** drop‑down menu).
+Create a Keycloak client for NGINX Plus in the Keycloak GUI:
 
-2. On the Cognito dashboard, click **Manage User Pools** to open the **Your User Pools** window. Click the **`Create a user pool`**  button or the highlighted phrase.
-   ![](./img/cognito-user-pools.png)
+1.  Access the Keycloak Admin Console at **`http://keycloak-server-address:8080/auth/admin/`** and log in.
 
-3. Configure **sign-in experience** as the following example:
-   ![](./img/cognito-user-pool-step-01-sign-in.png)
+    > Note:
+    >
+    > In the example of this repository, use the following information after running a docker containter for the purpose of testing.
+    >
+    > - **URL**: `http://localhost:8080/auth/admin`
+    > - **Basic Auth**: `admin / password` ([Where to change](https://github.com/nginx-openid-connect/nginx-oidc-keycloak/blob/main/docker-compose.yml#L37))
 
-4. Configure **security requirements** as the following example:
+    <br>
 
-   > Note: Select `No MFA` for your quick testing. Otherwise configure multi-factor authentication.
+    ![](./img/keycloak-admin-sign-in.png)
 
-   ![](./img/cognito-user-pool-step-02-security.png)
+2.  In the left navigation column, click **Clients**. On the **Clients** page that opens, click the **Create** button in the upper right corner.
 
-5. Configure **sign-up experience** as the following example:
+3.  On the **Add Client** page that opens, enter or select these values, then click the **`Save`** button.
 
-   > Note: select additional required attributes such as `preferred_username` because it is used for **NGINX Dev Portal**.
+    - **Client ID** – The name of the application for which you’re enabling SSO (Keycloak refers to it as the “client”). Here we’re using `my-client-id`.
+    - **Client Protocol** – openid-connect.
 
-   ![](./img/cognito-user-pool-step-03-sign-up.png)
+    ![](./img/keycloak-add-client.png)
 
-6. Configure **message delivery** as the following example:
-   ![](./img/cognito-user-pool-step-04-message-delivery.png)
+4.  On the **my-client-id** page that opens, enter or select these values on the **Settings** tab:
 
-7. **Integrate your app** as the following example:
+    - **Access Type**:
 
-   > Note: You can create your app either in this step or [after creating](#create-a-new-application) a user pool.
+      - Option 1. Check `confidential` if you **don't enable PKCE**.
+      - Option 2. Check `public` if you **enable PKCE**.
 
-   ![](./img/cognito-user-pool-step-05-integrate-app.png)
+    - **Valid Redirect URIs** – The URI of the NGINX Plus instance, including the port number, and ending in the following URIs:
 
-   - Option 1. Check `Generate a client secret` if you want to **disable PKCE**
+      - **`/_codexch`**: in this guide it is `http://nginx.keycloak.test:11000/_codexch`
+      - **`/_logout`**: in this guide it is `http://nginx.keycloak.test:11000/_logout`
 
-   - Option 2. Check `Don't generate a client secret` if you want to **enable PKCE**
-     ![](./img/cognito-user-pool-step-05-initial-app-client.png)
+      > **Notes:**
+      >
+      > - For production, we strongly recommend that you use SSL/TLS (port 443).
+      > - The port number is mandatory even when you’re using the default port for HTTP (80) or HTTPS (443). But it it isn't needed if you use NGINX ACM.
 
-8. Review and create a user pool:
+      <br>
 
-   ![](./img/cognito-user-pool-step-06-review-and-create.png)
+      ![](./img/keycloak-valid-redirect-uris.png)
 
-9. Click **`Create user pool`** button:
+5.  Click the `Credentials` tab and make a note of the value in the **Secret** field. You will copy it into the [NGINX Plus configuration file](https://github.com/nginx-openid-connect/nginx-oidc-keycloak/blob/main/oidc_idp.conf) in **Step 3** of [Configuring NGINX Plus](https://github.com/nginx-openid-connect/nginx-oidc-keycloak/blob/main/docs/02-NGINX-Plus-Setup.md#configure-nginx-openid-connect).
 
-   ![](./img/cognito-user-pool-step-06-create-button.png)
+    > **Notes**: This is only used for the step if you choose `Access Type: confidential` when you don't enable PKCE.
 
-## Create a user
+    <br>
 
-1. Select a user pool (`nginx-oidc-user-pool`) that you created:
+    ![](./img/keycloak-credentials.png)
 
-   ![](./img/cognito-user-pool-step-07-created.png)
+## Create a Role
 
-2. In the tab of Users, click `Create user` button:
+1.  Click the `Roles` tab, then click the **Add Role** button in the upper right corner of the page that opens.
 
-   ![](./img/cognito-users-01-create.png)
+    ![](./img/keycloak-add-role.png)
 
-3. Add a user name that you want to create:
+2.  On the **Add Role** page that opens, type a value in the **Role Name** field (here it is `nginx-keycloak-role`) and click the  Save  button.
 
-   > Note: Select `Don't send an invitation` for your quick testing to create dummy email address.
+    ![](./img/keycloak-add-role-name.png)
 
-   ![](./img/cognito-users-02-create.png)
+## Create a User
 
-## Create a domain
+1. In the left navigation column, click **Users**. On the Users page that opens, either click the name of an existing user, or click the **Add user** button in the upper right corner to create a new user. For complete instructions, see the [Keycloak documentation](https://www.keycloak.org/docs/latest/server_admin/index.html#user-management).
 
-1. Select a **Create Cognito domain** in the list after selecting the tab of **App Integration**:
+   ![](./img/keycloak-add-user.png)
 
-   ![](./img/cognito-app-integration-01-domain.png)
+2. **Optional**. **Reset password** if you want to set a password for your testing:
 
-2. Type a domain prefix in the **Domain prefix** field under **Cognito domain** (in this guide, `my-nginx-plus-oidc`). Click the **`Create Cognito domain`** button:
+   ![](./img/keycloak-reset-user-password.png)
 
-   ![](./img/cognito-app-integration-02-domain.png)
-
-3. Check if your domain is created:
-   ![](./img/cognito-app-integration-03-domain.png)
-
-## Create or Edit a new Application
-
-1. Select the tab of **App Integration** in the user pool:
-
-   ![](./img/cognito-app-integration-tab.png)
-
-2. Scroll down from the tab of **App integration**, and select **Create app client** button
-
-   ![](./img/cognito-app-client-create-button.png)
-
-3. Enter a name of app (in this guide, `nginx-oidc-app` for **non-PKCE**, `nginx-odic-app-pkce` for **PKCE**) in the **App client name** field. Make sure that you choose one of the following options.
-
-   - Option 1. Check `Generate a client secret` if you want to **disable PKCE**
-     ![](./img/cognito-app-client-non-pkce-01.png)
-
-   - Option 2. Check `Don't generate a client secret` if you want to **enable PKCE**
-     ![](./img/cognito-user-pool-step-05-initial-app-client.png)
-
-4. Find **Hosted UI settings** after scrolling down, and perform the following steps:
-
-   ![](./img/cognito-app-client-host-UI-settings.png)
-
-   - 4.1 In the sections of **Allowed callback URLs** and **Allowed sign-out URLs**, type the URI of the NGINX Plus instance including the port number, and ending in **`/_codexch`** for callback URL and **`/_logout`** for sign-out URL as follows.
-
-     - **Allowed callback URLs**: `https://nginx.cognito.test:443/_codexch`.
-     - **Allowed sign-out URLs**: `https://nginx.cognito.test:443/_logout`.
-
-     > **Notes:**
-     >
-     > - For production, we strongly recommend that you use SSL/TLS (port 443).
-     > - The port number is mandatory even when you’re using the default port for HTTP (80) or HTTPS (443). But it it isn't needed if you use NGINX ACM.
-
-   - 4.2 In the **OAuth 2.0 grant types** section, click the **Authorization code grant** checkbox.
-
-   - 4.3 In the **OpenID Connect scopes**, click the **email, openid**, and **profile** checkboxes.
-
-   - 4.4 Click the **`Save changes`** button.
-
-5. Check the **App client list** in the tab of **App integration** under the user pool of **nginx-oidc-user-pool** to see TWO applications (#1 for non-PKCE, #2 for PKCE) are created.
-
-   ![](./img/cognito-app-client-list.png)
-
-6. Click one of app clients to note **Client ID** and **Client secret** for configuring NGINX Plus.
-
-   - Option 1. Copy and note **Client ID** and **Client secret** for non-PKCE application.
-     ![](./img/cognito-app-details-non-pkce.png)
-
-   - Option 2. Copy and note only **Client ID** for PKCE application.
-     ![](./img/cognito-app-details-pkce.png)
+3. On the management page for the user (here, **user-01**), click the `Role Mappings` tab. On the page that opens, select **my-client-01** on the **Client Roles** drop‑down menu. Click `nginx-keycloak-role` in the **Available Roles** box, then click the **Add selected** button below the box. The role then appears in the **Assigned Roles** and **Effective Roles** boxes, as shown in the screenshot.
+   ![](./img/keycloak-role-mapping.png)

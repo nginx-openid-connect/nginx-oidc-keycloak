@@ -51,7 +51,7 @@ services:
       dockerfile: ./docker/docker-files/nginxplus-ubuntu18.04/Dockerfile
     image: nginxplus_oidc_keycloak_ubuntu18.04
     ports:
-      - 16000:16000
+      - 11000:11000
     volumes:
       - type: bind
         source: ./
