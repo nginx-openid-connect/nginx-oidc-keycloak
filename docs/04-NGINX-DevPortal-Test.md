@@ -8,11 +8,11 @@ Take the following steps to set up NGINX ACM/DevPortal OIDC and test it for Keyc
 
   Ensure that you use **different application and callback/logout URLs** as the following example unlike that are already created to test your [containerized NGINX Plus](./02-NGINX-Plus-Setup.md).
 
-  | Category              | Example                                         |
-  | --------------------- | ----------------------------------------------- |
-  | Application Name      | `nginx-devportal-app`                           |
-  | Allowed Callback URLs | `http://nginx.devportal.keycloak.test/_codexch` |
-  | Allowed Logout URLs   | `http://nginx.devportal.keycloak.test/_logout`  |
+  | Category                         | Example                                         |
+  | -------------------------------- | ----------------------------------------------- |
+  | Application Name                 | `nginx-devportal-app`                           |
+  | Valid Redirect URIs (for Login)  | `http://nginx.devportal.keycloak.test/_codexch` |
+  | Valid Redirect URIs (for Logout) | `http://nginx.devportal.keycloak.test/_logout`  |
 
 - Edit `hosts` file in your laptop via if you want to locally test your app:
 
