@@ -10,9 +10,10 @@ var ERR_AC_TOKEN              = 'OIDC Access Token validation error: ';
 var ERR_ID_TOKEN              = 'OIDC ID Token validation error: ';
 var ERR_IDP_AUTH              = 'OIDC unexpected response from IdP in code exchange';
 var ERR_TOKEN_RES             = 'OIDC AuthZ code sent but token response is not JSON. ';
-var ERR_X_CLIENT_ID_COOKIE    = 'X-Client-Id should be in cookie';
+var ERR_X_CLIENT_ID_COOKIE    = 'Check if cookie is removed, and X-Client-Id is there';
 var ERR_X_CLIENT_ID_NOT_FOUND = 'X-Client-Id not found in the IdP app';
 var WRN_SESSION               = 'OIDC session is invalid';
+var INF_SESSION               = 'OIDC session is valid';
 var INF_REFRESH_TOKEN         = 'OIDC refresh success, updating tokens for ';
 var INF_REPLACE_TOKEN         = 'OIDC replacing previous refresh token (';
 
@@ -208,7 +209,6 @@ function generateCustomEndpoint(r, uri, isEnableCustomPath, paths) {
     var res   = '';
     var key   = '';
     var isKey = false;
-    r.log('### paths: ' + paths)
     var items = JSON.parse(paths);
     for (var i = 0; i < uri.length; i++) {
         switch (uri[i]) {
@@ -804,12 +804,12 @@ function isValidSession(r) {
 // the session cookie could play from any client (browsers or command line).
 //
 function validateSession(r) {
-    if (r.variables.session_validation_enable == 1 && !isValidSession(r)) {
+    if (!isValidSession(r)) {
         r.warn(WRN_SESSION)
         r.return(401, '{"message": "' + WRN_SESSION + '"}\n')
         return false;
     }
-    r.return(200, '{"message": "' + WRN_SESSION + '"}\n') 
+    r.return(200, '{"message": "' + INF_SESSION + '"}\n') 
     return true;
 }
 
