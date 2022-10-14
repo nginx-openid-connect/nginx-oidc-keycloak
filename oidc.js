@@ -747,6 +747,8 @@ function isValidTokenSet(r, tokenset) {
         // The validateIdToken() logs error so that r.error() isn't used.
         return isErr;
     }
+    // The access token is mostly validated by IdP using auth_jwt directive.
+    // This can be used when you want to validate the token set in NGINX.
     if (r.variables.access_token_validation_enable == 1 &&
         !isValidToken(r, '/_access_token_validation', tokenset.access_token)) {
         // The validateAccessToken() logs error so that r.error() isn't used.
