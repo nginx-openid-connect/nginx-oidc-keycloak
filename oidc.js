@@ -5,17 +5,17 @@
  */
 
 // Constants for common error message. These will be cleaned up.
-var ERR_CFG_VARS              = 'OIDC missing configuration variables: ';
-var ERR_AC_TOKEN              = 'OIDC Access Token validation error: ';
-var ERR_ID_TOKEN              = 'OIDC ID Token validation error: ';
-var ERR_IDP_AUTH              = 'OIDC unexpected response from IdP in code exchange';
-var ERR_TOKEN_RES             = 'OIDC AuthZ code sent but token response is not JSON. ';
-var ERR_X_CLIENT_ID_COOKIE    = 'Check if cookie is removed, and X-Client-Id is there';
-var ERR_X_CLIENT_ID_NOT_FOUND = 'X-Client-Id not found in the IdP app';
-var WRN_SESSION               = 'OIDC session is invalid';
-var INF_SESSION               = 'OIDC session is valid';
-var INF_REFRESH_TOKEN         = 'OIDC refresh success, updating tokens for ';
-var INF_REPLACE_TOKEN         = 'OIDC replacing previous refresh token (';
+var ERR_CFG_VARS      = 'OIDC missing configuration variables';
+var ERR_AC_TOKEN      = 'OIDC Access Token validation error';
+var ERR_ID_TOKEN      = 'OIDC ID Token validation error';
+var ERR_IDP_AUTH      = 'OIDC unexpected response from IdP in code exchange';
+var ERR_TOKEN_RES     = 'OIDC AuthZ code sent but token response is not JSON';
+var ERR_CLIENT_ID     = 'Check if cookie is removed, and client_id is there';
+var ERR_IDP_APP_NAME  = 'IdP app is not set in $oidc_app_name';
+var WRN_SESSION       = 'OIDC session is invalid';
+var INF_SESSION       = 'OIDC session is valid';
+var INF_REFRESH_TOKEN = 'OIDC refresh success, updating tokens for ';
+var INF_REPLACE_TOKEN = 'OIDC replacing previous refresh token';
 
 // Flag to check if there is still valid session cookie. It is used by auth()
 // and validateIdToken().
@@ -134,10 +134,24 @@ function validateIdToken(r) {
 //
 // - https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowTokenValidation
 // - https://openid.net/specs/openid-connect-core-1_0.html#ImplicitTokenValidation
+//
 // - This function is called by the location of `_access_token_validation` which
 //   is called by either OIDC code exchange or refersh token request.
+//
 // - The 'aud' claim isn't contained in general ID token from Amazon Cognito,
 //   although we can add it. Hence, the claim isn't part of this validation.
+//
+// - This function is for the case when you want to validate the token within
+//   NGINX layer to following the spec. of OpenID Connect Core 1.0. 
+//
+// - But, this token is mostly validated by using one of following options.
+//
+//   + Option 1. validate a token (assumtion: JWT format) by using
+//               a NGINX auth_jwt directive to validate it via IdP URI.
+//     auth_jwt "" token=$access_token;
+//     auth_jwt_key_request /_jwks_uri;
+//
+//   + Option 2. validate a token by using IdP token introspection endpoint.
 //
 function validateAccessToken(r) {
     var missingClaims = []
@@ -271,7 +285,7 @@ function startIdPAuthZ(r) {
         }
     }
     if (missingConfig.length) {
-        r.error(ERR_CFG_VARS + '$oidc_' + missingConfig.join(' $oidc_'));
+        r.error(ERR_CFG_VARS + ': $oidc_' + missingConfig.join(' $oidc_'));
         r.return(500, r.variables.internal_error_message);
         return;
     }
@@ -335,7 +349,7 @@ function handleSuccessfulRefreshResponse(r, res) {
         // Update new refresh token to key/value store if we got a new one.
         r.log(INF_REFRESH_TOKEN + r.variables.cookie_session_id);
         if (r.variables.refresh_token != tokenset.refresh_token) {
-            r.log(INF_REPLACE_TOKEN + r.variables.refresh_token + 
+            r.log(INF_REPLACE_TOKEN + ' (' + r.variables.refresh_token + 
                     ') with new value: ' + tokenset.refresh_token);
             r.variables.refresh_token = tokenset.refresh_token;
         }
@@ -473,7 +487,7 @@ function handleSuccessfulTokenResponse(r, res) {
                                      '; ' + r.variables.oidc_cookie_flags;
         r.return(302, r.variables.redirect_base + r.variables.cookie_auth_redir);
     } catch (e) {
-        r.error(ERR_TOKEN_RES + res.responseBody);
+        r.error(ERR_TOKEN_RES + ' ' + res.responseBody);
         r.return(502);
     }
 }
@@ -704,7 +718,7 @@ function isValidRequiredClaims(r, msgPrefix, missingClaims) {
             }
         }
         if (missingClaims.length) {
-            r.error(msgPrefix + 'missing claim(s) ' + missingClaims.join(' '));
+            r.error(msgPrefix + ': missing claim(s) ' + missingClaims.join(' '));
             return false;
         }
     } catch (e) {
@@ -820,14 +834,13 @@ function validateSession(r) {
 function isValidXClientId(r) {
     if (r.variables.client_id_validation_enable == 1) {
         if (!r.variables.cookie_client_id) {
-            r.warn(ERR_X_CLIENT_ID_COOKIE)
-            r.return(400, '{"message": "' + ERR_X_CLIENT_ID_COOKIE + '"}\n')
+            r.warn(ERR_CLIENT_ID)
+            r.return(400, '{"message": "' + ERR_CLIENT_ID + '"}\n')
             return false
         }
         if (r.variables.oidc_app_name == '') {
-            var errMsg = ERR_X_CLIENT_ID_NOT_FOUND + ': ' + r.variables.cookie_client_id;
-            r.warn(errMsg)
-            r.return(404, '{"message": "' + errMsg + '"}\n')
+            r.warn(ERR_IDP_APP_NAME)
+            r.return(404, '{"message": "' + ERR_IDP_APP_NAME + '"}\n')
             return false
         }
     }
