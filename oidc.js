@@ -192,7 +192,8 @@ function logout(r) {
     // Call the IDP logout endpoint with custom query parameters
     // if the IDP doesn't support RP-initiated logout.
     } else {
-        queryParams = generateQueryParams(r.variables.oidc_logout_query_params);
+        queryParams = '?' + generateQueryParams(
+            r.variables.oidc_logout_query_params);
     }
     r.variables.session_id    = '-';
     r.variables.id_token      = '-';
@@ -393,7 +394,7 @@ function refershToken(r) {
 function setTokenParams(r) {
     clearTokenParams(r)
     if (r.variables.oidc_token_query_params_enable == 1) {
-        r.variables.token_query_params = generateQueryParams(
+        r.variables.token_query_params = '?' + generateQueryParams(
             r.variables.oidc_token_query_params
         );
     }
@@ -525,8 +526,6 @@ function getAuthZArgs(r) {
     var authZArgs   = '?response_type=code&scope=' + r.variables.oidc_scopes +
                       '&client_id='                + r.variables.oidc_client + 
                       '&redirect_uri='             + redirectURI + 
-                      // uncomment when to need claims of access token in Auth0.
-                      // '&audience='              + 'https://{{domain}}}/api/v2/' +
                       '&nonce='                    + nonceHash;
     var cookieFlags = r.variables.oidc_cookie_flags;
     r.headersOut['Set-Cookie'] = [
@@ -552,7 +551,8 @@ function getAuthZArgs(r) {
     }
 
     if (r.variables.oidc_authz_query_params_enable == 1) {
-        return generateQueryParams(r.variables.oidc_authz_query_params);
+        return authZArgs += '&' + generateQueryParams(
+            r.variables.oidc_authz_query_params);
     }
     return authZArgs;
 }
@@ -560,7 +560,7 @@ function getAuthZArgs(r) {
 // Generate custom query parameters from JSON object
 function generateQueryParams(obj) {
     var items = JSON.parse(obj);
-    var args = '?'
+    var args = ''
     for (var key in items) {
         args += key + '=' + items[key] + '&'
     }
@@ -822,7 +822,7 @@ function isValidSession(r) {
 function validateSession(r) {
     if (!isValidSession(r)) {
         r.warn(WRN_SESSION)
-        r.return(401, '{"message": "' + WRN_SESSION + '"}\n')
+        r.return(403, '{"message": "' + WRN_SESSION + '"}\n')
         return false;
     }
     r.return(200, '{"message": "' + INF_SESSION + '"}\n') 
