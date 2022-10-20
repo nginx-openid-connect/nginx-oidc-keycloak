@@ -208,7 +208,11 @@ Configure a Dev Portal by either referencing **NGINX Management Suite Docs** of 
   > }
   > ```
 
-## 3. Test Dev Portal OIDC with Auth0
+- Delete an environment of `Dev Portal`:
+
+  > `DELETE https://{{ctrl_ip}}/api/acm/v1/infrastructure/workspaces/{{infraworkspacename}}/environments/{{environmentname}}`
+
+## 3. Test Dev Portal OIDC with Keycloak
 
 - Open a web browser and access the Dev Portal's FQDN like `http://nginx.devportal.keycloak.test`.
 - Try `Login` and `Logout`.
