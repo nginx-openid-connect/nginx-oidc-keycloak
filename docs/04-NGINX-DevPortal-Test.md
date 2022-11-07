@@ -18,7 +18,8 @@ Take the following steps to set up NGINX ACM/DevPortal OIDC and test it for Keyc
 
   ```bash
   $ sudo vi /etc/hosts
-  127.0.0.1 nginx.devportal.keycloak.test
+  127.0.0.1 nginx.devportal.keycloak.test # Note : The provided IP address should be of the host where you installed the Dev Portal packages .
+  # Also make sure your controller and Dev Portal /etc/hosts files have similar entries.
   ```
 
 ## 2. Install NGINX API Connectivity Manager
@@ -83,11 +84,11 @@ Configure a Dev Portal by either referencing **NGINX Management Suite Docs** of 
             {
               "action": {
                 "authFlowType": "AUTHCODE",
-                "jwksURI": "http://{{idpDomain}}/certs",
-                "tokenEndpoint": "http://{{idpDomain}}/token",
-                "userInfoEndpoint": "http://{{idpDomain}}/userinfo",
-                "authorizationEndpoint": "http://{{idpDomain}}/auth",
-                "logOffEndpoint": "http://{{idpDomain}}/logout",
+                "jwksURI": "https://{{idpDomain}}/certs",
+                "tokenEndpoint": "https://{{idpDomain}}/token",
+                "userInfoEndpoint": "https://{{idpDomain}}/userinfo",
+                "authorizationEndpoint": "https://{{idpDomain}}/auth",
+                "logOffEndpoint": "https://{{idpDomain}}/logout",
                 "logOutParams": [],
                 "TokenParams": [],
                 "uris": {
@@ -161,11 +162,11 @@ Configure a Dev Portal by either referencing **NGINX Management Suite Docs** of 
             {
               "action": {
                 "authFlowType": "AUTHCODE",
-                "jwksURI": "http://{{idpDomain}}/certs",
-                "tokenEndpoint": "http://{{idpDomain}}/token",
-                "userInfoEndpoint": "http://{{idpDomain}}/userinfo",
-                "authorizationEndpoint": "http://{{idpDomain}}/auth",
-                "logOffEndpoint": "http://{{idpDomain}}/logout",
+                "jwksURI": "https://{{idpDomain}}/certs",
+                "tokenEndpoint": "https://{{idpDomain}}/token",
+                "userInfoEndpoint": "https://{{idpDomain}}/userinfo",
+                "authorizationEndpoint": "https://{{idpDomain}}/auth",
+                "logOffEndpoint": "https://{{idpDomain}}/logout",
                 "logOutParams": [],
                 "TokenParams": [],
                 "uris": {
@@ -215,5 +216,9 @@ Configure a Dev Portal by either referencing **NGINX Management Suite Docs** of 
 ## 3. Test Dev Portal OIDC with Keycloak
 
 - Open a web browser and access the Dev Portal's FQDN like `http://nginx.devportal.keycloak.test`.
+  ![](./img/logged-out-devportal.png)
 - Try `Login` and `Logout`.
+  ![](./img/login-keycloak.png)
+
+  ![](./img/logged-in-devportal.png)
 - Test the above TWO steps after changing IdP (PKCE option) and updating Dev Portal via NGINX ACM API.
