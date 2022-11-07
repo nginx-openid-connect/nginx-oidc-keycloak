@@ -18,7 +18,7 @@ Take the following steps to set up NGINX ACM/DevPortal OIDC and test it for Keyc
 
   ```bash
   $ sudo vi /etc/hosts
-  127.0.0.1 nginx.devportal.keycloak.test # Note : The provided IP address should be of the host where you installed the Dev Portal packages .
+  127.0.0.1 nginx.devportal.keycloak.test # Note : The provided IP address should be of the host where you installed the Dev Portal packages.
   # Also make sure your controller and Dev Portal /etc/hosts files have similar entries.
   ```
 
