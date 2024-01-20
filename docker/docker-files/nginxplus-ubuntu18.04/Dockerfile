@@ -27,11 +27,14 @@ RUN set -x \
     && adduser --system --disabled-login --ingroup nginx --no-create-home --home /nonexistent --gecos "nginx user" --shell /bin/false --uid 1001 nginx \
     # Install prerequisite packages, vim for editing, then Install NGINX Plus
     && apt-get update && apt-get upgrade -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends apt-transport-https lsb-release ca-certificates wget dnsutils gnupg vim-tiny apt-utils jq \
+    && DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends apt-transport-https lsb-release ca-certificates wget dnsutils gnupg gnupg2 ubuntu-keyring vim-tiny apt-utils jq \
     # Install NGINX Plus from repo (https://cs.nginx.com/repo_setup)
-    && wget http://nginx.org/keys/nginx_signing.key && apt-key add nginx_signing.key \
-    && printf "deb https://plus-pkgs.nginx.com/ubuntu `lsb_release -cs` nginx-plus\n" | tee /etc/apt/sources.list.d/nginx-plus.list \
-    && wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90nginx \
+    # && wget http://nginx.org/keys/nginx_signing.key && apt-key add nginx_signing.key \
+    && wget -qO - https://cs.nginx.com/static/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
+    # && printf "deb https://plus-pkgs.nginx.com/ubuntu `lsb_release -cs` nginx-plus\n" | tee /etc/apt/sources.list.d/nginx-plus.list \
+    && printf "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://pkgs.nginx.com/plus/ubuntu `lsb_release -cs` nginx-plus\n" | tee /etc/apt/sources.list.d/nginx-plus.list \
+    # && wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90nginx \
+    && wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90pkgs-nginx \
     && apt-get update \
     #
     ## Install the latest release of NGINX Plus and/or NGINX Plus modules
